@@ -1,0 +1,24 @@
+info:
+  name: testing
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:3000/api/hello
+  body:
+    type: json
+    data: |-
+      {
+        "email": "prepfora_affiliate@yopmail.com",
+        "invite_url": "https://prepfora.com"
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0OTUyZjlkYy1kOWEwLTRmODctYWI1NC04MGI4NDQ2YjMzZWIiLCJlbWFpbCI6ImVnaWxlb25pc28uZWthZGFAZ21haWwuY29tIiwibmFtZSI6IkVnaWxlb25pc28gRWthZGEiLCJyb2xlIjoiQWRtaW4iLCJyb2xlX2lkIjoiMzQxZjIwMGQtZDMzNi00NjM4LTkwOGYtMmY1NTUwYTE1MTI5IiwiaXNfYWRtaW4iOnRydWUsImV4cCI6MTc5MjUyMzUxMn0.7Z6d8UHgtzOUbHJeQ5xVK-slZE-43mhAe0R1CuDgNZU
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

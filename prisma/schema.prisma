@@ -1,0 +1,267 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url      = env("DATABASE_URL")
+}
+
+enum AUTH_TYPE {
+  EMAIL
+  GMAIL
+}
+
+model User {
+  id String @id @default(cuid())
+
+  email           String    @unique
+  auth_type       AUTH_TYPE @default(EMAIL)
+  country         String?
+  phone           String?
+  profile_picture String?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  addresses Address[]
+
+  carts Cart[]
+
+  reviews Review[]
+
+  orders Order[]
+}
+
+model Address {
+  id       String @id @default(cuid())
+  user_id  String
+  address  String
+  city     String
+  state    String
+  zip_code String
+  country  String
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  user User @relation(fields: [user_id], references: [id])
+
+  orders Order[]
+}
+
+model Cart {
+  id      String @id @default(cuid())
+  user_id String
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  user User @relation(fields: [user_id], references: [id])
+
+  cartItems CartItem[]
+}
+
+model CartItem {
+  id         String @id @default(cuid())
+  cart_id    String
+  product_id String
+  quantity   Int
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  cart    Cart    @relation(fields: [cart_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+model Category {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  products Product[]
+}
+
+enum ORDER_STATUS {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum ORDER_PAYMENT_STATUS {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Payment {
+  id        String               @id @default(cuid())
+  reference String
+  status    ORDER_PAYMENT_STATUS @default(PENDING)
+  amount    Float
+  type      String
+  order_id  String
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  order Order @relation(fields: [order_id], references: [id])
+}
+
+model Order {
+  id             String               @id @default(cuid())
+  user_id        String
+  items          String[]
+  status         ORDER_STATUS         @default(PENDING)
+  total          Float
+  payment_status ORDER_PAYMENT_STATUS @default(PENDING)
+
+  payment_intent_id String?
+
+  shipping_address_id String
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  user    User      @relation(fields: [user_id], references: [id])
+  address Address   @relation(fields: [shipping_address_id], references: [id])
+  payment Payment[]
+}
+
+model Product {
+  id String @id @default(uuid())
+
+  name           String
+  description    String?
+  images         String[]
+  price          Float
+  stock          Int
+  discount_price Float?   @default(0.0)
+  is_on_sale     Boolean  @default(false)
+  rating         Float    @default(0.0)
+  category_id    String
+  category       Category @relation(fields: [category_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  cartItems CartItem[]
+
+  reviews Review[]
+}
+
+model Review {
+  id         String  @id @default(cuid())
+  user_id    String
+  product_id String
+  rating     Int
+  review     String?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  user    User    @relation(fields: [user_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+enum ADMIN_PERMISSION {
+  OVERVIEW
+  USERS
+  PRODUCTS
+  ORDERS
+  CATEGORIES
+  REVIEWS
+  DELIVERIES
+  DRIVERS
+  ROLES
+  ADMINS
+}
+
+model Admin_Role {
+  id String @id @default(cuid())
+
+  name            String
+  description     String?
+  permission_list ADMIN_PERMISSION[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+
+  admins Admin[]
+}
+
+model Admin {
+  id String @id @default(cuid())
+
+  first_name      String
+  last_name       String
+  email           String  @unique
+  phone           String?
+  profile_picture String?
+
+  role_id String
+  role    Admin_Role @relation(fields: [role_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  images      String[]
+  products    String[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+}
+
+model Activity_Log {
+  id         String  @id @default(ulid())
+  action     String
+  action_by  String
+  ip_address String?
+  user_agent String?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  is_deleted Boolean   @default(false)
+}
